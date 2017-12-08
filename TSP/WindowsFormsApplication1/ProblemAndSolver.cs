@@ -910,13 +910,92 @@ namespace TSP
             return results;
         }
 
-        public string[] fancySolveProblem()
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        
+        public int findFarthestPoint(ArrayList route, bool[] visited)
+        {
+            ///todo check for infinity
+            double max = 0;
+            int maxposition = 0;
+            foreach (int city in route) {
+                for(int i = 0; i < Cities.Length; i++)
+                {
+                    if (visited[i]) continue;
+                    double temp = Cities[city].costToGetTo(Cities[i]);
+                    if (temp > max)
+                    {
+                        max = temp;
+                        maxposition = i;
+                    }
+                }
+            }
+            visited[maxposition] = true;
+            return maxposition;
+        }
+
+        //where r is the city being added
+        public int findMinArc(ArrayList route, int cityToAdd)
+        {
+
+            double min = Double.PositiveInfinity;
+            int insertAt = -1;
+
+            /*
+             * j = [d a b c]
+             * i = [a b c d]
+             */
+            int j = route.Count - 1; //previous
+            for (int i = 0; i < route.Count; i++)
+            {
+                //i and j are already in the subtour
+                //r is being inserted
+                City cityI = Cities[(int)(route[i])];
+                City cityJ= Cities[(int)(route[j])];
+                City cityR = Cities[cityToAdd];
+
+                double ir = cityI.costToGetTo(cityR);
+                double rj = cityR.costToGetTo(cityJ);
+                double ij = cityI.costToGetTo(cityJ);
+                double temp = ir + rj - ij;
+                if (temp < min)
+                {
+                    min = temp;
+                    insertAt = i + 1;
+                }
+                j = i;
+                
+            }
+            return insertAt;
+        }
+
+         public string[] fancySolveProblem()
         {
             string[] results = new string[3];
 
             // TODO: Add your implementation for your advanced solver here.
 
-            results[COST] = "not implemented";    // load results into array here, replacing these dummy values
+            ArrayList route = new ArrayList();
+            bool[] visited = new bool[Cities.Length];           
+
+            route.Add(0);
+            visited[0] = true;
+            while (route.Count != Cities.Length)
+            {
+                int cityToAdd = findFarthestPoint(route, visited);
+                int position = findMinArc(route, cityToAdd);
+                route.Insert(position, cityToAdd);
+            }
+
+            Route.Clear();
+            foreach(int i in route){
+                Route.Add(Cities[i]);
+            }
+            bssf = new TSPSolution(Route);
+
+            results[COST] = costOfBssf().ToString();                          // load results array
+            //results[TIME] = timer.Elapsed.ToString();
+            //results[COUNT] = count.ToString();
             results[TIME] = "-1";
             results[COUNT] = "-1";
 
