@@ -923,10 +923,13 @@ namespace TSP
                 {
                     if (visited[i]) continue;
                     double temp = Cities[city].costToGetTo(Cities[i]);
-                    if (temp > max)
+                    if (temp != Double.PositiveInfinity)
                     {
-                        max = temp;
-                        maxposition = i;
+                        if (temp > max)
+                        {
+                            max = temp;
+                            maxposition = i;
+                        }
                     }
                 }
             }
@@ -957,14 +960,17 @@ namespace TSP
                 double ir = cityI.costToGetTo(cityR);
                 double rj = cityR.costToGetTo(cityJ);
                 double ij = cityI.costToGetTo(cityJ);
-                double temp = ir + rj - ij;
-                if (temp < min)
+                
+                if (ir != Double.PositiveInfinity  && rj != Double.PositiveInfinity) 
                 {
-                    min = temp;
-                    insertAt = i + 1;
+                    double temp = ir + rj - ij;
+                    if (temp < min)
+                    {
+                        min = temp;
+                        insertAt = i;
+                    }
                 }
                 j = i;
-                
             }
             return insertAt;
         }
@@ -974,16 +980,30 @@ namespace TSP
             string[] results = new string[3];
 
             // TODO: Add your implementation for your advanced solver here.
-
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             ArrayList route = new ArrayList();
             bool[] visited = new bool[Cities.Length];           
 
             route.Add(0);
+            int position = -1;
+            int cityToAdd = -1;
+            while (position == -1)
+            {
+                cityToAdd = findFarthestPoint(route, visited);
+                position = findMinArc(route, cityToAdd);
+
+            }
+            route.Insert(position, cityToAdd);
+            visited = new bool[Cities.Length];
+            visited[0] = true;
+            visited[cityToAdd] = true;
+    
             visited[0] = true;
             while (route.Count != Cities.Length)
             {
-                int cityToAdd = findFarthestPoint(route, visited);
-                int position = findMinArc(route, cityToAdd);
+                cityToAdd = findFarthestPoint(route, visited);
+                position = findMinArc(route, cityToAdd);
                 route.Insert(position, cityToAdd);
             }
 
@@ -991,13 +1011,15 @@ namespace TSP
             foreach(int i in route){
                 Route.Add(Cities[i]);
             }
+            Route.Reverse();
             bssf = new TSPSolution(Route);
+            timer.Stop();
 
             results[COST] = costOfBssf().ToString();                          // load results array
-            //results[TIME] = timer.Elapsed.ToString();
-            //results[COUNT] = count.ToString();
-            results[TIME] = "-1";
-            results[COUNT] = "-1";
+            results[TIME] = timer.Elapsed.ToString();
+            results[COUNT] = "1";
+            //results[TIME] = "-1";
+            //results[COUNT] = "-1";
 
             return results;
         }
